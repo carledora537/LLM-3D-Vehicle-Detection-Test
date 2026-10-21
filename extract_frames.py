@@ -1,18 +1,29 @@
+
 import subprocess
 import os
+import sys
 
-RUN_DIR = "march28_run"
-VIDEO_FILE = "march28.mp4"
+RUN_DIR = "run_directory"
+VIDEO_FILE = "video.mp4"
+EXTRACTION_SCRIPT = "extract_video_frames_to_run.py"
+
 
 def extract_frames():
+    if not os.path.isdir(RUN_DIR):
+        print(f"Error: Run directory not found: {RUN_DIR}")
+        return
 
-    if not os.path.exists(RUN_DIR):
-        print("Run directory not found")
+    if not os.path.isfile(VIDEO_FILE):
+        print(f"Error: Video file not found: {VIDEO_FILE}")
+        return
+
+    if not os.path.isfile(EXTRACTION_SCRIPT):
+        print(f"Error: Extraction script not found: {EXTRACTION_SCRIPT}")
         return
 
     command = [
-        "python",
-        "extract_video_frames_to_run.py",
+        sys.executable,
+        EXTRACTION_SCRIPT,
         "--run_dir", RUN_DIR,
         "--video", VIDEO_FILE,
         "--out_subdir", "frames/video",
@@ -20,10 +31,17 @@ def extract_frames():
         "--lidar_fps", "10"
     ]
 
-    subprocess.run(command)
+    try:
+        subprocess.run(command, check=True)
+        print("Frames extracted successfully.")
 
-    print("Frames extracted successfully")
+    except subprocess.CalledProcessError as error:
+        print(f"Frame extraction failed: {error}")
+
+    except OSError as error:
+        print(f"Could not run extraction script: {error}")
 
 
 if __name__ == "__main__":
     extract_frames()
+
